@@ -1,12 +1,24 @@
 package hu.bme.aut.msl_coincapapp.persistence
 
 import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import hu.bme.aut.msl_coincapapp.model.Currency
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CurrencyDao {
-    @Query("SELECT * from currencies ORDER BY name ASC")
-    fun getAllCurrencies(): Flow<List<Currency>>
+    @Query("SELECT * from currencies ORDER BY rank ASC")
+    fun getAllCurrencies(): List<Currency>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCurrencyList(currencies: List<Currency>)
+
+    @Update
+    suspend fun update(currency: Currency)
+
+    @Delete
+    suspend fun delete(currency: Currency)
 }

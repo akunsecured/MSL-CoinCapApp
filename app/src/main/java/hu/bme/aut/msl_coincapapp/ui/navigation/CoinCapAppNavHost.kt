@@ -1,15 +1,17 @@
 package hu.bme.aut.msl_coincapapp.ui.navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import hu.bme.aut.msl_coincapapp.ui.screen.currency_list.CurrencyListScreen
 import hu.bme.aut.msl_coincapapp.ui.screen.currency.CurrencyScreen
+import hu.bme.aut.msl_coincapapp.ui.screen.currency_list.CurrencyListScreen
 import hu.bme.aut.msl_coincapapp.ui.screen.favorites.FavoritesScreen
 
 @Composable
@@ -24,7 +26,10 @@ fun CoinCapAppNavHost(
         startDestination = startDestination
     ) {
         composable("currency_list") {
-            CurrencyListScreen(navController = navController)
+            CurrencyListScreen(
+                navController = navController,
+                currencyListViewModel = hiltViewModel()
+            )
         }
 
         composable("favorites") {
@@ -37,7 +42,9 @@ fun CoinCapAppNavHost(
             )
         ) {
             val currencyId = it.arguments?.getString("id")
-            currencyId?.let {
+
+            currencyId?.let { id ->
+                Log.d("SelectedCurrency", id)
                 CurrencyScreen()
             }
         }
