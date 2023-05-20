@@ -32,7 +32,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,7 +42,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import hu.bme.aut.msl_coincapapp.model.Currency
@@ -57,9 +55,7 @@ fun CurrencyListScreen(
     navigator: DestinationsNavigator,
     currencyListViewModel: CurrencyListViewModel = hiltViewModel(),
 ) {
-    val currencyList by currencyListViewModel.currencyList.collectAsState(initial = emptyList())
-    val isLoading by currencyListViewModel.isLoading
-    val isError by currencyListViewModel.isError
+    val viewState by currencyListViewModel.viewState
 
     val searchWidgetState by currencyListViewModel.searchWidgetState
     val searchTextState by currencyListViewModel.searchTextState
@@ -85,7 +81,7 @@ fun CurrencyListScreen(
             )
         },
     ) { padding ->
-        if (isLoading) {
+        if (viewState.isLoading) {
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
@@ -94,13 +90,13 @@ fun CurrencyListScreen(
                 CircularProgressIndicator()
             }
         } else {
-            if (isError != null) {
+            if (viewState.error.isNotEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     Text(
                         modifier = Modifier.align(Alignment.Center),
-                        text = isError!!,
+                        text = viewState.error,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -112,7 +108,7 @@ fun CurrencyListScreen(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    items(currencyList) { currency ->
+                    items(viewState.currencies) { currency ->
                         CurrencyItem(
                             currency = currency,
                             itemClick = { id ->
