@@ -23,9 +23,9 @@ import kotlinx.serialization.Serializable
 @Entity(tableName = "currencies")
 data class Currency(
     @PrimaryKey val id: String = "",
-    @ColumnInfo(name = "rank") val rank: Int,
-    @ColumnInfo(name = "symbol") val symbol: String,
-    @ColumnInfo(name = "name") val name: String,
+    @ColumnInfo(name = "rank") val rank: Int = -1,
+    @ColumnInfo(name = "symbol") val symbol: String = "",
+    @ColumnInfo(name = "name") val name: String = "",
     @ColumnInfo(name = "supply") val supply: Double? = -1.0,
     @ColumnInfo(name = "maxSupply") val maxSupply: Double? = -1.0,
     @ColumnInfo(name = "marketCapUsd") val marketCapUsd: Double? = -1.0,
@@ -34,4 +34,6 @@ data class Currency(
     @ColumnInfo(name = "changePercent24Hr") val changePercent24Hr: Double? = -1.0,
     @ColumnInfo(name = "vwap24Hr") val vwap24Hr: Double? = -1.0,
     @ColumnInfo(name = "explorer") val explorer: String? = "",
+    @ColumnInfo(name = "isFavorite") var isFavorite: Boolean = false,
+    @ColumnInfo(name = "timestamp") var timestamp: Long = -1,
 )

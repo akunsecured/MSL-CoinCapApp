@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
 
 class CurrencyListRepository @Inject constructor(
@@ -21,21 +20,29 @@ class CurrencyListRepository @Inject constructor(
     fun loadCurrencies(): Flow<Resource<List<Currency>>> = flow {
         emit(Resource.Loading())
 
-        val currenciesFromRoom = currencyDao.getAllCurrencies()
-        if (currenciesFromRoom.isEmpty()) {
-            try {
-                val currencyList = coinCapService.getAssets().data
-                currencyDao.insertCurrencyList(currencyList)
-                emit(Resource.Success(currencyList))
-            } catch (e: HttpException) {
-                emit(Resource.Error(e.localizedMessage ?: "An unexpected error occured"))
-            } catch (e: IOException) {
-                emit(Resource.Error("Couldn't reach server. Check your internet connection"))
+        try {
+            val results = coinCapService.getAssets()
+
+            val currencyList = results.data
+            currencyList.forEach { currency ->
+                currency.timestamp = results.timestamp
             }
-        } else {
-            emit(Resource.Success(currenciesFromRoom))
+            currencyDao.insertCurrencyList(currencyList)
+
+            emit(Resource.Success(currencyList))
+        } catch (e: Exception) {
+            val currenciesFromRoom = currencyDao.getAllCurrencies()
+            if (currenciesFromRoom.isEmpty()) {
+                if (e is HttpException) {
+                    emit(Resource.Error(e.localizedMessage ?: "An unexpected error occured"))
+                    return@flow
+                }
+
+                emit(Resource.Error("Couldn't reach server. Check your internet connection"))
+                return@flow
+            } else {
+                emit(Resource.Success(currenciesFromRoom))
+            }
         }
     }.flowOn(Dispatchers.IO)
-
-
 }

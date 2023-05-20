@@ -7,11 +7,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -35,17 +39,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import hu.bme.aut.msl_coincapapp.R
 import hu.bme.aut.msl_coincapapp.model.Currency
 import hu.bme.aut.msl_coincapapp.ui.screen.destinations.CurrencyScreenDestination
+import hu.bme.aut.msl_coincapapp.utils.roundTo
 
 @Destination(start = true)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -112,7 +125,7 @@ fun CurrencyListScreen(
                         CurrencyItem(
                             currency = currency,
                             itemClick = { id ->
-                                navigator.navigate(CurrencyScreenDestination(currency))
+                                navigator.navigate(CurrencyScreenDestination(id))
                             }
                         )
                     }
@@ -281,19 +294,74 @@ fun CurrencyItem(
 ) {
     Card(
         modifier = Modifier
-            .padding(vertical = 8.dp)
+            .padding(all = 8.dp)
             .clickable {
                 itemClick(currency.id)
             }
             .fillMaxWidth()
     ) {
-        Column(
-            modifier = Modifier.padding(all = 8.dp)
+        Row(
+            Modifier
+                .padding(all = 8.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "${currency.name} (${currency.symbol})")
-            Text(text = "Rank #${currency.rank}")
-            Text(text = "Price: $${currency.priceUsd}")
+            Row {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(
+                            "https://assets.coincap.io/assets/icons/${
+                                currency.symbol.lowercase()
+                            }@2x.png"
+                        )
+                        .crossfade(true)
+                        .error(R.drawable.ic_launcher_foreground)
+                        .build(),
+                    contentDescription = "Cryptocurrency Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                )
+                Column(
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                ) {
+                    Text(
+                        text = currency.name,
+                        style = TextStyle.Default.copy(
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                        ),
+                    )
+                    Text(text = "(${currency.symbol})")
+                }
+            }
+            Row {
+                Text(
+                    text = "$${currency.priceUsd?.roundTo(2)}",
+                    style = TextStyle.Default.copy(
+                        textAlign = TextAlign.End,
+                    )
+                )
+                Text(
+                    text = "${currency.changePercent24Hr?.roundTo(2)}%",
+                    style = TextStyle.Default.copy(
+                        textAlign = TextAlign.End,
+                        color = if (currency.changePercent24Hr!! >= 0) {
+                            Color.Green
+                        } else {
+                            Color.Red
+                        }
+                    ),
+                    modifier = Modifier
+                        .widthIn(88.dp, 88.dp)
+                        .padding(start = 8.dp)
+                )
+            }
         }
+
     }
 }
 
@@ -304,9 +372,10 @@ fun CurrencyItemPreview() {
         currency = Currency(
             id = "example",
             rank = 1,
-            name = "Example-Coin",
+            name = "Long-Example-Coin",
             symbol = "EC",
-            priceUsd = 1.23456
+            priceUsd = 12345.6789,
+            changePercent24Hr = -1234.5678,
         ),
         itemClick = {})
 }

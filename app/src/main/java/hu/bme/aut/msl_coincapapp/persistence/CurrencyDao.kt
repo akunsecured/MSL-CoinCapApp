@@ -13,6 +13,9 @@ interface CurrencyDao {
     @Query("SELECT * from currencies ORDER BY rank ASC")
     fun getAllCurrencies(): List<Currency>
 
+    @Query("SELECT * from currencies WHERE id = :id")
+    fun getCurrencyById(id: String): Currency?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCurrencyList(currencies: List<Currency>)
 
