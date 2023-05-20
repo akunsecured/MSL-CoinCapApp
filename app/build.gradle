@@ -8,6 +8,9 @@ plugins {
 
     // Serialization
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.8.10'
+
+    // Ksp
+    id("com.google.devtools.ksp") version "1.8.0-1.0.9"
 }
 
 android {
@@ -76,10 +79,6 @@ dependencies {
     kapt "com.google.dagger:hilt-compiler:2.44"
     implementation "androidx.hilt:hilt-navigation-compose:1.0.0"
 
-    // Compose Navigation
-    def nav_version = "2.5.3"
-    implementation "androidx.navigation:navigation-compose:$nav_version"
-
     // Ksp
     implementation 'com.google.devtools.ksp:symbol-processing-api:1.8.0-1.0.9'
 
@@ -97,6 +96,9 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0"
     implementation "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0"
 
+    // Destination
+    implementation 'io.github.raamcosta.compose-destinations:core:1.9.42-beta'
+    ksp 'io.github.raamcosta.compose-destinations:ksp:1.9.42-beta'
 }
 
 // Allow references to generated code

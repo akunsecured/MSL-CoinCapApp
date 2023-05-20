@@ -42,15 +42,20 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import hu.bme.aut.msl_coincapapp.model.Currency
+import hu.bme.aut.msl_coincapapp.ui.screen.destinations.CurrencyScreenDestination
 
+@Destination(start = true)
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun CurrencyListScreen(
-    navController: NavController,
-    currencyListViewModel: CurrencyListViewModel,
+    navigator: DestinationsNavigator,
+    currencyListViewModel: CurrencyListViewModel = hiltViewModel(),
 ) {
     val currencyList by currencyListViewModel.currencyList.collectAsState(initial = emptyList())
     val isLoading by currencyListViewModel.isLoading
@@ -111,7 +116,7 @@ fun CurrencyListScreen(
                         CurrencyItem(
                             currency = currency,
                             itemClick = { id ->
-                                navController.navigate("currency/$id")
+                                navigator.navigate(CurrencyScreenDestination(currency))
                             }
                         )
                     }
