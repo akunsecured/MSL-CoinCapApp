@@ -24,7 +24,8 @@ object RepositoryModule {
 
     @Provides
     @ViewModelScoped
-    fun provideCurrencyRepository(): CurrencyRepository = CurrencyRepository()
+    fun provideCurrencyRepository(currencyDao: CurrencyDao): CurrencyRepository =
+        CurrencyRepository(currencyDao)
 
     @Provides
     @ViewModelScoped
