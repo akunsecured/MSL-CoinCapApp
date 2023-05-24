@@ -8,8 +8,11 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import hu.bme.aut.msl_coincapapp.model.Currency
 import hu.bme.aut.msl_coincapapp.utils.Resource
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 enum class SearchWidgetState {
@@ -19,6 +22,7 @@ enum class SearchWidgetState {
 
 data class CurrencyListViewState(
     val isLoading: Boolean = false,
+    val isFromCache: Boolean = false,
     val currencies: List<Currency> = emptyList(),
     val error: String = ""
 )
@@ -29,6 +33,9 @@ class CurrencyListViewModel @Inject constructor(
 ) : ViewModel() {
     private val _viewState = mutableStateOf(CurrencyListViewState())
     val viewState: State<CurrencyListViewState> get() = _viewState
+
+    private val _isRefresh = MutableStateFlow(false)
+    val isRefresh = _isRefresh.asStateFlow()
 
     private val _searchWidgetState: MutableState<SearchWidgetState> =
         mutableStateOf(SearchWidgetState.CLOSED)
@@ -50,22 +57,38 @@ class CurrencyListViewModel @Inject constructor(
         getCurrencyList()
     }
 
+    fun refreshCurrencyList() {
+        viewModelScope.launch {
+            _isRefresh.value = true
+            getCurrencyList()
+        }
+    }
+
     private fun getCurrencyList() {
         repository.loadCurrencies().onEach { result ->
             when (result) {
                 is Resource.Success -> {
                     _viewState.value =
-                        CurrencyListViewState(currencies = result.data ?: emptyList())
+                        CurrencyListViewState(
+                            currencies = result.data ?: emptyList(),
+                            isFromCache = result.isFromCache,
+                            error = result.message ?: ""
+                        )
+                    _isRefresh.value = false
                 }
 
                 is Resource.Error -> {
                     _viewState.value = CurrencyListViewState(
                         error = result.message ?: "An unexpected error occured"
                     )
+                    _isRefresh.value = false
                 }
 
                 is Resource.Loading -> {
-                    _viewState.value = CurrencyListViewState(isLoading = true)
+                    _viewState.value = CurrencyListViewState(
+                        isLoading = true,
+                        currencies = _viewState.value.currencies
+                    )
                 }
             }
         }.launchIn(viewModelScope)

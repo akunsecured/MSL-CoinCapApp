@@ -31,17 +31,23 @@ class CurrencyListRepository @Inject constructor(
 
             emit(Resource.Success(currencyList))
         } catch (e: Exception) {
+            val errorMessage = if (e is HttpException) {
+                e.localizedMessage ?: "An unexpected error occurred"
+            } else {
+                "Couldn't reach server. Check your internet connection"
+            }
+
             val currenciesFromRoom = currencyDao.getAllCurrencies()
             if (currenciesFromRoom.isEmpty()) {
-                if (e is HttpException) {
-                    emit(Resource.Error(e.localizedMessage ?: "An unexpected error occured"))
-                    return@flow
-                }
-
-                emit(Resource.Error("Couldn't reach server. Check your internet connection"))
-                return@flow
+                emit(Resource.Error(errorMessage))
             } else {
-                emit(Resource.Success(currenciesFromRoom))
+                emit(
+                    Resource.Success(
+                        currenciesFromRoom,
+                        isFromCache = true,
+                        message = errorMessage
+                    )
+                )
             }
         }
     }.flowOn(Dispatchers.IO)
