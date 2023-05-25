@@ -13,6 +13,11 @@ interface CurrencyDao {
     @Query("SELECT * from currencies ORDER BY rank ASC")
     fun getAllCurrencies(): List<Currency>
 
+    /*
+    @Query("SELECT currencies.* from currencies INNER JOIN favorite_statuses ON favorite_statuses.id = currencies.id WHERE isFavorite = 1")
+    fun getFavoriteCurrencies(): List<Currency>
+     */
+
     @Query("SELECT * from currencies WHERE id = :id")
     fun getCurrencyById(id: String): Currency?
 

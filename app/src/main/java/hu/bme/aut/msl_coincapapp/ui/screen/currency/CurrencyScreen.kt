@@ -51,6 +51,7 @@ fun CurrencyScreen(
 ) {
     viewModel.initCurrencyStateById(id)
     val currency by viewModel.currency
+    val favoriteStatus by viewModel.favoriteStatus
 
     val uriHandler = LocalUriHandler.current
 
@@ -79,13 +80,13 @@ fun CurrencyScreen(
                 actions = {
                     IconButton(onClick = { viewModel.updateFavoriteStatus() }) {
                         Icon(
-                            imageVector = if (currency.isFavorite) {
+                            imageVector = if (favoriteStatus.isFavorite) {
                                 Icons.Outlined.Favorite
                             } else {
                                 Icons.Outlined.FavoriteBorder
                             },
                             tint = MaterialTheme.colorScheme.onPrimary,
-                            contentDescription = if (viewModel.currency.value.isFavorite) {
+                            contentDescription = if (viewModel.favoriteStatus.value.isFavorite) {
                                 "Remove from the Favorites"
                             } else {
                                 "Save to the Favorites"

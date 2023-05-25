@@ -34,6 +34,5 @@ data class Currency(
     @ColumnInfo(name = "changePercent24Hr") val changePercent24Hr: Double? = -1.0,
     @ColumnInfo(name = "vwap24Hr") val vwap24Hr: Double? = -1.0,
     @ColumnInfo(name = "explorer") val explorer: String? = "",
-    @ColumnInfo(name = "isFavorite") var isFavorite: Boolean = false,
     @ColumnInfo(name = "timestamp") var timestamp: Long = -1,
 )
