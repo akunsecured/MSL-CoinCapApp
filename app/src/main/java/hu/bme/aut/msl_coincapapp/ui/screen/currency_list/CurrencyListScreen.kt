@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
@@ -83,6 +84,12 @@ fun CurrencyListScreen(
             title = "Favorites",
             contentDescription = "Go to Favorites Screen",
             icon = Icons.Default.Favorite,
+        ),
+        MenuItem(
+            id = "crash",
+            title = "Crash the app",
+            contentDescription = "Crash the app",
+            icon = Icons.Default.Refresh
         )
     )
 
@@ -123,6 +130,10 @@ fun CurrencyListScreen(
                                     scope.launch {
                                         drawerState.close()
                                     }
+                                }
+
+                                "crash" -> {
+                                    throw RuntimeException("Example exception")
                                 }
 
                                 else -> {
