@@ -11,6 +11,9 @@ plugins {
 
     // Ksp
     id("com.google.devtools.ksp") version "1.8.0-1.0.9"
+
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
 }
 
 android {
@@ -105,6 +108,14 @@ dependencies {
 
     // SwipeRefresh
     implementation "com.google.accompanist:accompanist-swiperefresh:0.27.0"
+
+    // Import the BoM for the Firebase platform
+    implementation platform('com.google.firebase:firebase-bom:32.0.0')
+
+    // Add the dependencies for the Crashlytics and Analytics libraries
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation 'com.google.firebase:firebase-analytics-ktx'
 }
 
 // Allow references to generated code
