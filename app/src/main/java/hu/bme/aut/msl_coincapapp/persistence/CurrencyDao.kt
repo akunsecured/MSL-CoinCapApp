@@ -1,11 +1,9 @@
 package hu.bme.aut.msl_coincapapp.persistence
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Update
 import hu.bme.aut.msl_coincapapp.model.Currency
 
 @Dao
@@ -24,10 +22,4 @@ interface CurrencyDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCurrencyList(currencies: List<Currency>)
-
-    @Update
-    suspend fun update(currency: Currency)
-
-    @Delete
-    suspend fun delete(currency: Currency)
 }
