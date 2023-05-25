@@ -33,5 +33,9 @@ object RepositoryModule {
 
     @Provides
     @ViewModelScoped
-    fun provideFavoritesRepository(): FavoritesRepository = FavoritesRepository()
+    fun provideFavoritesRepository(
+        currencyDao: CurrencyDao,
+    ): FavoritesRepository = FavoritesRepository(
+        currencyDao
+    )
 }
