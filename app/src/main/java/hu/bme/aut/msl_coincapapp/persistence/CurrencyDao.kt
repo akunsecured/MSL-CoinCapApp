@@ -8,9 +8,6 @@ import hu.bme.aut.msl_coincapapp.model.Currency
 
 @Dao
 interface CurrencyDao {
-    @Query("SELECT * from currencies ORDER BY rank ASC")
-    fun getAllCurrencies(): List<Currency>
-
     @Query("SELECT * from currencies ORDER BY rank ASC LIMIT :limit OFFSET :offset")
     fun getNextCurrencies(offset: Int, limit: Int): List<Currency>
 

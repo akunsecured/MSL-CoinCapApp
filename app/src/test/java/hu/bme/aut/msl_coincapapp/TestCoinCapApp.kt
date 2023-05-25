@@ -43,7 +43,7 @@ class TestCoinCapApp {
             )
         )
 
-        val currencies = dao.getAllCurrencies()
+        val currencies = dao.getNextCurrencies(0, 19)
 
         assert(currencies.size == 1)
         assert(currencies[0] == testCurrency)

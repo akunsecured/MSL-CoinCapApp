@@ -14,7 +14,10 @@ class MockDao : CurrencyDao, FavoriteStatusDao {
         favoriteStatuses.clear()
     }
 
-    override fun getAllCurrencies(): List<Currency> = currencies
+    override fun getNextCurrencies(offset: Int, limit: Int): List<Currency> {
+        val l = if (limit >= currencies.size) currencies.size - 1 else limit
+        return currencies.slice(offset..l)
+    }
 
     override fun getSearchedCurrencies(search: String): List<Currency> =
         currencies.filter { currency ->
