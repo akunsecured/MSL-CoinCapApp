@@ -46,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -178,20 +179,23 @@ fun CurrencyListScreen(
                     state = swipeRefreshState,
                     onRefresh = currencyListViewModel::refreshCurrencyList
                 ) {
+                    val errorCheck = viewState.currencies.isEmpty() && viewState.error.isNotEmpty()
+
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
+                        verticalArrangement = if (errorCheck) Arrangement.Center else Arrangement.Top,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        if (viewState.currencies.isEmpty() && viewState.error.isNotEmpty()) {
+                        if (errorCheck) {
                             items(1) {
                                 Text(
                                     text = viewState.error,
+                                    textAlign = TextAlign.Center
                                 )
                             }
                         } else {
-                            if (viewState.isFromCache && isRefresh && viewState.error.isNotEmpty()) {
+                            if (viewState.isFromCache && viewState.error.isNotEmpty() && isRefresh) {
                                 Toast.makeText(context, viewState.error, Toast.LENGTH_SHORT).show()
                             }
                             items(viewState.currencies) { currency ->
