@@ -67,20 +67,22 @@ fun CurrencyItem(
             }
             Row {
                 Text(
-                    text = "$${currency.priceUsd?.roundTo(2)}",
+                    text = "$${currency.priceUsd.roundTo(2)}",
                     style = TextStyle.Default.copy(
                         textAlign = TextAlign.End,
                         fontWeight = FontWeight.Bold
                     )
                 )
                 Text(
-                    text = "${currency.changePercent24Hr?.roundTo(2)}%",
+                    text = "${currency.changePercent24Hr.roundTo(2)}%",
                     style = TextStyle.Default.copy(
                         textAlign = TextAlign.End,
-                        color = if (currency.changePercent24Hr!! >= 0) {
+                        color = if ((currency.changePercent24Hr ?: 0.0) > 0) {
                             Color.Green
-                        } else {
+                        } else if ((currency.changePercent24Hr ?: 0.0) < 0) {
                             Color.Red
+                        } else {
+                            TextStyle.Default.color
                         },
                         fontWeight = FontWeight.Bold
                     ),

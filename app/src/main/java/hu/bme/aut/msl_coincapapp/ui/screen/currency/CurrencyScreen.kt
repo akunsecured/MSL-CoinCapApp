@@ -144,19 +144,21 @@ fun CurrencyScreen(
                             ) {
                                 Text(text = "Price")
                                 Text(
-                                    text = "$${currency.priceUsd?.roundTo(2)}",
+                                    text = "$${currency.priceUsd.roundTo(2)}",
                                     style = TextStyle.Default.copy(
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                 )
                                 Text(
-                                    text = "(${currency.changePercent24Hr?.roundTo(2)}%)",
+                                    text = "(${currency.changePercent24Hr.roundTo(2)}%)",
                                     style = TextStyle.Default.copy(
-                                        color = if (currency.changePercent24Hr!! >= 0) {
+                                        color = if ((currency.changePercent24Hr ?: 0.0) > 0) {
                                             Color.Green
-                                        } else {
+                                        } else if ((currency.changePercent24Hr ?: 0.0) < 0) {
                                             Color.Red
+                                        } else {
+                                            TextStyle.Default.color
                                         },
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.Bold
@@ -170,7 +172,7 @@ fun CurrencyScreen(
                             ) {
                                 Text(text = "Volume (24Hr)")
                                 Text(
-                                    text = "$${currency.volumeUsd24Hr?.format()}",
+                                    text = "$${currency.volumeUsd24Hr.format()}",
                                     style = TextStyle.Default.copy(
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.Bold
@@ -191,7 +193,7 @@ fun CurrencyScreen(
                             ) {
                                 Text(text = "Supply")
                                 Text(
-                                    text = "${currency.supply?.format()} ${currency.symbol}",
+                                    text = "${currency.supply.format()} ${currency.symbol}",
                                     style = TextStyle.Default.copy(
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.Bold
@@ -205,7 +207,7 @@ fun CurrencyScreen(
                             ) {
                                 Text(text = "Market Cap")
                                 Text(
-                                    text = "$${currency.marketCapUsd?.format()}",
+                                    text = "$${currency.marketCapUsd.format()}",
                                     style = TextStyle.Default.copy(
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.Bold

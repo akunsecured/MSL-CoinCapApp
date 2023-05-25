@@ -3,20 +3,25 @@ package hu.bme.aut.msl_coincapapp.utils
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
-fun Double.roundTo(decimals: Int): Double =
-    (this * (10.0).pow(decimals)).roundToInt() / (10.0).pow(decimals)
+fun Double?.roundTo(decimals: Int): Double {
+    val num = this ?: 0.0
+    return (num * (10.0).pow(decimals)).roundToInt() / (10.0).pow(decimals)
+}
 
-fun Double.format(): String {
+
+fun Double?.format(): String {
     val n: Int
     val unit: String
 
-    if (this >= (10.0).pow(9)) {
+    val num = this ?: 0.0
+
+    if (num >= (10.0).pow(9)) {
         n = 9
         unit = "b"
-    } else if (this >= (10.0).pow(6)) {
+    } else if (num >= (10.0).pow(6)) {
         n = 6
         unit = "m"
-    } else if (this >= (10.0).pow(3)) {
+    } else if (num >= (10.0).pow(3)) {
         n = 3
         unit = "k"
     } else {
@@ -25,8 +30,8 @@ fun Double.format(): String {
     }
 
     if (n == 0) {
-        return "$this"
+        return "$num"
     }
 
-    return "${(this / (10.0).pow(n)).roundTo(2)}$unit"
+    return "${(num / (10.0).pow(n)).roundTo(2)}$unit"
 }
