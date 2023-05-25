@@ -64,7 +64,7 @@ class CurrencyListViewModel @Inject constructor(
         }
     }
 
-    private fun getCurrencyList() {
+    fun getCurrencyList() {
         repository.loadCurrencies().onEach { result ->
             when (result) {
                 is Resource.Success -> {
@@ -79,7 +79,7 @@ class CurrencyListViewModel @Inject constructor(
 
                 is Resource.Error -> {
                     _viewState.value = CurrencyListViewState(
-                        error = result.message ?: "An unexpected error occured"
+                        error = result.message ?: "An unexpected error occurred"
                     )
                     _isRefresh.value = false
                 }
@@ -88,6 +88,35 @@ class CurrencyListViewModel @Inject constructor(
                     _viewState.value = CurrencyListViewState(
                         isLoading = true,
                         currencies = _viewState.value.currencies
+                    )
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    fun searchCurrencies(text: String) {
+        repository.searchCurrencies(text).onEach { result ->
+            when (result) {
+                is Resource.Success -> {
+                    _viewState.value =
+                        CurrencyListViewState(
+                            currencies = result.data ?: emptyList(),
+                            isFromCache = result.isFromCache,
+                            error = result.message ?: ""
+                        )
+                    _isRefresh.value = false
+                }
+
+                is Resource.Error -> {
+                    _viewState.value = CurrencyListViewState(
+                        error = result.message ?: "An unexpected error occurred"
+                    )
+                    _isRefresh.value = false
+                }
+
+                is Resource.Loading -> {
+                    _viewState.value = CurrencyListViewState(
+                        isLoading = true,
                     )
                 }
             }

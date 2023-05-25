@@ -13,6 +13,9 @@ interface CurrencyDao {
     @Query("SELECT * from currencies ORDER BY rank ASC")
     fun getAllCurrencies(): List<Currency>
 
+    @Query("SELECT * from currencies WHERE (LOWER(symbol) LIKE '%' || :search || '%' OR id LIKE '%' || :search || '%' OR LOWER(name) LIKE '%' || :search || '%') ORDER BY rank ASC")
+    fun getSearchedCurrencies(search: String): List<Currency>
+
     @Query("SELECT currencies.* from currencies INNER JOIN favorite_statuses ON favorite_statuses.id = currencies.id WHERE isFavorite = 1")
     fun getFavoriteCurrencies(): List<Currency>
 

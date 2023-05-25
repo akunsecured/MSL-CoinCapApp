@@ -51,4 +51,40 @@ class CurrencyListRepository @Inject constructor(
             }
         }
     }.flowOn(Dispatchers.IO)
+
+    @WorkerThread
+    fun searchCurrencies(text: String): Flow<Resource<List<Currency>>> = flow {
+        emit(Resource.Loading())
+
+        try {
+            val results = coinCapService.getAssets(search = text)
+
+            val currencyList = results.data
+            currencyList.forEach { currency ->
+                currency.timestamp = results.timestamp
+            }
+            currencyDao.insertCurrencyList(currencyList)
+
+            emit(Resource.Success(currencyList))
+        } catch (e: Exception) {
+            val errorMessage = if (e is HttpException) {
+                e.localizedMessage ?: "An unexpected error occurred"
+            } else {
+                "Couldn't reach server. Check your internet connection"
+            }
+
+            val currenciesFromRoom = currencyDao.getSearchedCurrencies(text)
+            if (currenciesFromRoom.isEmpty()) {
+                emit(Resource.Error(errorMessage))
+            } else {
+                emit(
+                    Resource.Success(
+                        currenciesFromRoom,
+                        isFromCache = true,
+                        message = errorMessage
+                    )
+                )
+            }
+        }
+    }.flowOn(Dispatchers.IO)
 }

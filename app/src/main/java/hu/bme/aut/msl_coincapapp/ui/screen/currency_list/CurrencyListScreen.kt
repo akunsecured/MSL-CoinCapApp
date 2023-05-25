@@ -143,11 +143,14 @@ fun CurrencyListScreen(
                         currencyListViewModel.updateSearchTextState(it)
                     },
                     onCloseClicked = {
-                        currencyListViewModel.updateSearchTextState("")
-                        currencyListViewModel.updateSearchWidgetState(SearchWidgetState.CLOSED)
+                        currencyListViewModel.apply {
+                            updateSearchTextState("")
+                            updateSearchWidgetState(SearchWidgetState.CLOSED)
+                            getCurrencyList()
+                        }
                     },
                     onSearchClicked = {
-                        Log.d("SearchValue", it)
+                        currencyListViewModel.searchCurrencies(it.lowercase())
                     },
                     onSearchTriggered = {
                         currencyListViewModel.updateSearchWidgetState(SearchWidgetState.OPENED)
