@@ -7,9 +7,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import hu.bme.aut.msl_coincapapp.persistence.CurrencyDao
-import hu.bme.aut.msl_coincapapp.persistence.CurrencyDatabase
+import hu.bme.aut.msl_coincapapp.persistence.AppDatabase
 import hu.bme.aut.msl_coincapapp.persistence.FavoriteStatusDao
-import hu.bme.aut.msl_coincapapp.persistence.FavoriteStatusDatabase
 import javax.inject.Singleton
 
 @Module
@@ -17,33 +16,21 @@ import javax.inject.Singleton
 object PersistenceModule {
     @Provides
     @Singleton
-    fun provideCurrencyDatabase(application: Application): CurrencyDatabase {
-        return Room.databaseBuilder(application, CurrencyDatabase::class.java, "currency_database")
+    fun provideCurrencyDatabase(application: Application): AppDatabase {
+        return Room.databaseBuilder(application, AppDatabase::class.java, "currency_database")
             .fallbackToDestructiveMigration()
             .build()
     }
 
     @Provides
     @Singleton
-    fun provideCurrencyDao(database: CurrencyDatabase): CurrencyDao {
+    fun provideCurrencyDao(database: AppDatabase): CurrencyDao {
         return database.currencyDao()
     }
 
     @Provides
     @Singleton
-    fun provideFavoriteStatusDatabase(application: Application): FavoriteStatusDatabase {
-        return Room.databaseBuilder(
-            application,
-            FavoriteStatusDatabase::class.java,
-            "favorite_status_database"
-        )
-            .fallbackToDestructiveMigration()
-            .build()
-    }
-
-    @Provides
-    @Singleton
-    fun provideFavoriteStatusDao(database: FavoriteStatusDatabase): FavoriteStatusDao {
+    fun provideFavoriteStatusDao(database: AppDatabase): FavoriteStatusDao {
         return database.favoriteStatusDao()
     }
 }

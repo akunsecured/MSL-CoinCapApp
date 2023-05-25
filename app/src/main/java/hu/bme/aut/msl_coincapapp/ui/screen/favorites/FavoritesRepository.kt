@@ -10,7 +10,6 @@ class FavoritesRepository @Inject constructor(
     private val currencyDao: CurrencyDao,
 ) {
     suspend fun getFavoriteCurrencies(): List<Currency> = withContext(Dispatchers.IO) {
-        // TODO: show only the favorite currencies
-        currencyDao.getAllCurrencies()
+        currencyDao.getFavoriteCurrencies()
     }
 }

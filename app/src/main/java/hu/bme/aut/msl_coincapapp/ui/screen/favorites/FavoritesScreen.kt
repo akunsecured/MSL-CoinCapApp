@@ -1,6 +1,10 @@
 package hu.bme.aut.msl_coincapapp.ui.screen.favorites
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -70,14 +74,30 @@ fun FavoritesScreen(
             state = swipeRefreshState,
             onRefresh = favoritesViewModel::refreshFavoriteCurrencies
         ) {
-            LazyColumn {
-                items(currencies) { currency ->
-                    CurrencyItem(
-                        currency = currency,
-                        itemClick = { id ->
-                            navigator.navigate(CurrencyScreenDestination(id))
-                        }
+            if (currencies.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        text = "There are no favorite currencies",
                     )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                ) {
+                    items(currencies) { currency ->
+                        CurrencyItem(
+                            currency = currency,
+                            itemClick = { id ->
+                                navigator.navigate(CurrencyScreenDestination(id))
+                            }
+                        )
+                    }
                 }
             }
         }
