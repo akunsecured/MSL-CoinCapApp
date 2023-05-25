@@ -8,7 +8,6 @@ interface CoinCapService {
      * Get the cryptocurrencies
      *
      * @param search search by asset id (bitcoin) or symbol (BTC) (optional)
-     * @param ids query with multiple ids&#x3D;bitcoin,ethereum,monero (optional)
      * @param limit max limit of 2000 (optional)
      * @param offset offset (optional)
      * @return CurrencyResults
@@ -16,8 +15,7 @@ interface CoinCapService {
     @GET("assets")
     suspend fun getAssets(
         @Query("search") search: String? = null,
-        @Query("ids") ids: List<String>? = null,
         @Query("limit") limit: Int? = null,
         @Query("offset") offset: Int? = null,
-    ): CurrencyResults
+    ): CoinCapResult
 }

@@ -8,6 +8,12 @@ plugins {
 
     // Serialization
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.8.10'
+
+    // Ksp
+    id("com.google.devtools.ksp") version "1.8.0-1.0.9"
+
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
 }
 
 android {
@@ -18,8 +24,8 @@ android {
         applicationId "hu.bme.aut.msl_coincapapp"
         minSdk 26
         targetSdk 33
-        versionCode 3
-        versionName "1.0.2"
+        versionCode 4
+        versionName "1.0.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -76,10 +82,6 @@ dependencies {
     kapt "com.google.dagger:hilt-compiler:2.44"
     implementation "androidx.hilt:hilt-navigation-compose:1.0.0"
 
-    // Compose Navigation
-    def nav_version = "2.5.3"
-    implementation "androidx.navigation:navigation-compose:$nav_version"
-
     // Ksp
     implementation 'com.google.devtools.ksp:symbol-processing-api:1.8.0-1.0.9'
 
@@ -97,6 +99,23 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0"
     implementation "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0"
 
+    // Destination
+    implementation 'io.github.raamcosta.compose-destinations:core:1.9.42-beta'
+    ksp 'io.github.raamcosta.compose-destinations:ksp:1.9.42-beta'
+
+    // Coil
+    implementation "io.coil-kt:coil-compose:2.1.0"
+
+    // SwipeRefresh
+    implementation "com.google.accompanist:accompanist-swiperefresh:0.27.0"
+
+    // Import the BoM for the Firebase platform
+    implementation platform('com.google.firebase:firebase-bom:32.0.0')
+
+    // Add the dependencies for the Crashlytics and Analytics libraries
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation 'com.google.firebase:firebase-analytics-ktx'
 }
 
 // Allow references to generated code

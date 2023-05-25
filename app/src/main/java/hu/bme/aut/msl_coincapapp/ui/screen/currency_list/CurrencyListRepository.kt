@@ -1,39 +1,71 @@
 package hu.bme.aut.msl_coincapapp.ui.screen.currency_list
 
-import androidx.annotation.WorkerThread
+import hu.bme.aut.msl_coincapapp.model.Currency
 import hu.bme.aut.msl_coincapapp.network.CoinCapService
 import hu.bme.aut.msl_coincapapp.persistence.CurrencyDao
+import hu.bme.aut.msl_coincapapp.utils.AppResult
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class CurrencyListRepository @Inject constructor(
     private val coinCapService: CoinCapService,
     private val currencyDao: CurrencyDao,
 ) {
-    @WorkerThread
-    fun loadCurrencies(
-        onStart: () -> Unit,
-        onCompletion: () -> Unit,
-        onError: (String) -> Unit
-    ) = flow {
-        val currencies = currencyDao.getAllCurrencies()
-        if (currencies.isEmpty()) {
-            coinCapService.getAssets().apply {
-                currencyDao.insertCurrencyList(data)
-                emit(data)
+    suspend fun loadNextCurrencies(offset: Int, limit: Int): AppResult<Currency> =
+        withContext(Dispatchers.IO) {
+            delay(250)
+            try {
+                val results = coinCapService.getAssets(offset = offset, limit = limit)
+
+                val currencyList = results.data
+                currencyList.forEach { currency ->
+                    currency.timestamp = results.timestamp
+                }
+                currencyDao.insertCurrencyList(currencyList)
+
+                return@withContext AppResult.Success(items = currencyList)
+            } catch (e: Exception) {
+                val currenciesFromRoom = currencyDao.getNextCurrencies(
+                    offset = offset,
+                    limit = limit
+                )
+                return@withContext if (currenciesFromRoom.isEmpty()) {
+                    AppResult.Failure(error = e)
+                } else {
+                    AppResult.Success(
+                        items = currenciesFromRoom,
+                        isFromCache = true,
+                        error = e
+                    )
+                }
             }
-        } else {
-            emit(currencies)
         }
-    }.onStart { onStart() }
-        .onCompletion { onCompletion() }
-        .catch { e ->
-            onError(e.message ?: "Something went wrong")
+
+    suspend fun searchCurrencies(text: String): AppResult<Currency> = withContext(Dispatchers.IO) {
+        delay(250)
+        try {
+            val results = coinCapService.getAssets(search = text)
+
+            val currencyList = results.data
+            currencyList.forEach { currency ->
+                currency.timestamp = results.timestamp
+            }
+            currencyDao.insertCurrencyList(currencyList)
+
+            return@withContext AppResult.Success(currencyList)
+        } catch (e: Exception) {
+            val currenciesFromRoom = currencyDao.getSearchedCurrencies(text)
+            return@withContext if (currenciesFromRoom.isEmpty()) {
+                AppResult.Failure(error = e)
+            } else {
+                AppResult.Success(
+                    items = currenciesFromRoom,
+                    isFromCache = true,
+                    error = e
+                )
+            }
         }
-        .flowOn(Dispatchers.IO)
+    }
 }
