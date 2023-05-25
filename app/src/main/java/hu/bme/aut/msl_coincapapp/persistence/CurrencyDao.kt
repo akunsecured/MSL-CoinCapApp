@@ -11,6 +11,9 @@ interface CurrencyDao {
     @Query("SELECT * from currencies ORDER BY rank ASC")
     fun getAllCurrencies(): List<Currency>
 
+    @Query("SELECT * from currencies ORDER BY rank ASC LIMIT :limit OFFSET :offset")
+    fun getNextCurrencies(offset: Int, limit: Int): List<Currency>
+
     @Query("SELECT * from currencies WHERE (LOWER(symbol) LIKE '%' || :search || '%' OR id LIKE '%' || :search || '%' OR LOWER(name) LIKE '%' || :search || '%') ORDER BY rank ASC")
     fun getSearchedCurrencies(search: String): List<Currency>
 

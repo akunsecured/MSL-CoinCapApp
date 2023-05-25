@@ -1,61 +1,50 @@
 package hu.bme.aut.msl_coincapapp.ui.screen.currency_list
 
-import androidx.annotation.WorkerThread
 import hu.bme.aut.msl_coincapapp.model.Currency
 import hu.bme.aut.msl_coincapapp.network.CoinCapService
 import hu.bme.aut.msl_coincapapp.persistence.CurrencyDao
-import hu.bme.aut.msl_coincapapp.utils.Resource
+import hu.bme.aut.msl_coincapapp.utils.AppResult
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import retrofit2.HttpException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class CurrencyListRepository @Inject constructor(
     private val coinCapService: CoinCapService,
     private val currencyDao: CurrencyDao,
 ) {
-    @WorkerThread
-    fun loadCurrencies(): Flow<Resource<List<Currency>>> = flow {
-        emit(Resource.Loading())
+    suspend fun loadNextCurrencies(offset: Int, limit: Int): AppResult<Currency> =
+        withContext(Dispatchers.IO) {
+            delay(250)
+            try {
+                val results = coinCapService.getAssets(offset = offset, limit = limit)
 
-        try {
-            val results = coinCapService.getAssets()
+                val currencyList = results.data
+                currencyList.forEach { currency ->
+                    currency.timestamp = results.timestamp
+                }
+                currencyDao.insertCurrencyList(currencyList)
 
-            val currencyList = results.data
-            currencyList.forEach { currency ->
-                currency.timestamp = results.timestamp
-            }
-            currencyDao.insertCurrencyList(currencyList)
-
-            emit(Resource.Success(currencyList))
-        } catch (e: Exception) {
-            val errorMessage = if (e is HttpException) {
-                e.localizedMessage ?: "An unexpected error occurred"
-            } else {
-                "Couldn't reach server. Check your internet connection"
-            }
-
-            val currenciesFromRoom = currencyDao.getAllCurrencies()
-            if (currenciesFromRoom.isEmpty()) {
-                emit(Resource.Error(errorMessage))
-            } else {
-                emit(
-                    Resource.Success(
-                        currenciesFromRoom,
-                        isFromCache = true,
-                        message = errorMessage
-                    )
+                return@withContext AppResult.Success(items = currencyList)
+            } catch (e: Exception) {
+                val currenciesFromRoom = currencyDao.getNextCurrencies(
+                    offset = offset,
+                    limit = limit
                 )
+                return@withContext if (currenciesFromRoom.isEmpty()) {
+                    AppResult.Failure(error = e)
+                } else {
+                    AppResult.Success(
+                        items = currenciesFromRoom,
+                        isFromCache = true,
+                        error = e
+                    )
+                }
             }
         }
-    }.flowOn(Dispatchers.IO)
 
-    @WorkerThread
-    fun searchCurrencies(text: String): Flow<Resource<List<Currency>>> = flow {
-        emit(Resource.Loading())
-
+    suspend fun searchCurrencies(text: String): AppResult<Currency> = withContext(Dispatchers.IO) {
+        delay(250)
         try {
             val results = coinCapService.getAssets(search = text)
 
@@ -65,26 +54,18 @@ class CurrencyListRepository @Inject constructor(
             }
             currencyDao.insertCurrencyList(currencyList)
 
-            emit(Resource.Success(currencyList))
+            return@withContext AppResult.Success(currencyList)
         } catch (e: Exception) {
-            val errorMessage = if (e is HttpException) {
-                e.localizedMessage ?: "An unexpected error occurred"
-            } else {
-                "Couldn't reach server. Check your internet connection"
-            }
-
             val currenciesFromRoom = currencyDao.getSearchedCurrencies(text)
-            if (currenciesFromRoom.isEmpty()) {
-                emit(Resource.Error(errorMessage))
+            return@withContext if (currenciesFromRoom.isEmpty()) {
+                AppResult.Failure(error = e)
             } else {
-                emit(
-                    Resource.Success(
-                        currenciesFromRoom,
-                        isFromCache = true,
-                        message = errorMessage
-                    )
+                AppResult.Success(
+                    items = currenciesFromRoom,
+                    isFromCache = true,
+                    error = e
                 )
             }
         }
-    }.flowOn(Dispatchers.IO)
+    }
 }

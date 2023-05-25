@@ -2,14 +2,14 @@ package hu.bme.aut.msl_coincapapp.mock.network
 
 import hu.bme.aut.msl_coincapapp.model.Currency
 import hu.bme.aut.msl_coincapapp.network.CoinCapService
-import hu.bme.aut.msl_coincapapp.network.CurrencyResults
+import hu.bme.aut.msl_coincapapp.network.CoinCapResult
 
 class MockService : CoinCapService {
     override suspend fun getAssets(
         search: String?,
         limit: Int?,
         offset: Int?
-    ): CurrencyResults {
+    ): CoinCapResult {
         val currencies = MutableList(100) {
             val num = it + 1
             Currency(
@@ -19,7 +19,7 @@ class MockService : CoinCapService {
                 rank = num,
             )
         }
-        return CurrencyResults(
+        return CoinCapResult(
             currencies,
             -1
         )

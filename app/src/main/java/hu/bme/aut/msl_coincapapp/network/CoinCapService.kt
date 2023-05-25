@@ -17,5 +17,5 @@ interface CoinCapService {
         @Query("search") search: String? = null,
         @Query("limit") limit: Int? = null,
         @Query("offset") offset: Int? = null,
-    ): CurrencyResults
+    ): CoinCapResult
 }

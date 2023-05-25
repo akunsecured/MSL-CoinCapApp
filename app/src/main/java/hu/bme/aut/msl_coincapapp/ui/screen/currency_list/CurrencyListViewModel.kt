@@ -2,17 +2,18 @@ package hu.bme.aut.msl_coincapapp.ui.screen.currency_list
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import hu.bme.aut.msl_coincapapp.model.Currency
-import hu.bme.aut.msl_coincapapp.utils.Resource
+import hu.bme.aut.msl_coincapapp.utils.DefaultPaginator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import javax.inject.Inject
 
 enum class SearchWidgetState {
@@ -24,15 +25,16 @@ data class CurrencyListViewState(
     val isLoading: Boolean = false,
     val isFromCache: Boolean = false,
     val currencies: List<Currency> = emptyList(),
-    val error: String = ""
+    val error: String = "",
+    val endReached: Boolean = false,
+    val page: Int = 0,
 )
 
 @HiltViewModel
 class CurrencyListViewModel @Inject constructor(
     private val repository: CurrencyListRepository
 ) : ViewModel() {
-    private val _viewState = mutableStateOf(CurrencyListViewState())
-    val viewState: State<CurrencyListViewState> get() = _viewState
+    var viewState by mutableStateOf(CurrencyListViewState())
 
     private val _isRefresh = MutableStateFlow(false)
     val isRefresh = _isRefresh.asStateFlow()
@@ -40,6 +42,59 @@ class CurrencyListViewModel @Inject constructor(
     private val _searchWidgetState: MutableState<SearchWidgetState> =
         mutableStateOf(SearchWidgetState.CLOSED)
     val searchWidgetState: State<SearchWidgetState> get() = _searchWidgetState
+
+    private fun getErrorMessage(error: Throwable?) = if (error != null) {
+        if (error is HttpException) {
+            error.localizedMessage ?: "An unexpected error occurred"
+        } else {
+            "Couldn't reach server. Check your internet connection"
+        }
+    } else {
+        ""
+    }
+
+    private val paginator = DefaultPaginator(
+        initialKey = 0,
+        onLoadUpdated = {
+            viewState = viewState.copy(
+                isLoading = it
+            )
+        },
+        onRequest = { nextPage ->
+            repository.loadNextCurrencies(nextPage, 20)
+        },
+        getNextKey = {
+            viewState.page + 20
+        },
+        onError = { error ->
+            viewState = viewState.copy(
+                error = getErrorMessage(error)
+            )
+        },
+        onSuccess = { currencies, newKey, error, clearPrev ->
+            viewState = viewState.copy(
+                currencies = if (clearPrev) {
+                    currencies
+                } else {
+                    if (viewState.isFromCache) {
+                        val newCurrencies = currencies.toMutableList().filter { currency ->
+                            !viewState.currencies.map { c -> c.id }.toList().contains(currency.id)
+                        }
+                        viewState.currencies + newCurrencies
+                    } else {
+                        viewState.currencies + currencies
+                    }
+                },
+                page = newKey,
+                endReached = currencies.isEmpty(),
+                error = getErrorMessage(error)
+            )
+
+            if (_isRefresh.value) {
+                _isRefresh.value = false
+            }
+        }
+    )
 
     fun updateSearchWidgetState(newState: SearchWidgetState) {
         _searchWidgetState.value = newState
@@ -54,72 +109,33 @@ class CurrencyListViewModel @Inject constructor(
     }
 
     init {
-        getCurrencyList()
+        loadNextCurrencies()
     }
 
-    fun refreshCurrencyList() {
+    fun loadNextCurrencies(clearPrev: Boolean = false) {
         viewModelScope.launch {
-            _isRefresh.value = true
-            getCurrencyList()
+            if (clearPrev) {
+                viewState = CurrencyListViewState()
+                paginator.reset()
+            }
+            paginator.loadNextItems(clearPrev)
         }
     }
 
-    fun getCurrencyList() {
-        repository.loadCurrencies().onEach { result ->
-            when (result) {
-                is Resource.Success -> {
-                    _viewState.value =
-                        CurrencyListViewState(
-                            currencies = result.data ?: emptyList(),
-                            isFromCache = result.isFromCache,
-                            error = result.message ?: ""
-                        )
-                    _isRefresh.value = false
-                }
-
-                is Resource.Error -> {
-                    _viewState.value = CurrencyListViewState(
-                        error = result.message ?: "An unexpected error occurred"
-                    )
-                    _isRefresh.value = false
-                }
-
-                is Resource.Loading -> {
-                    _viewState.value = CurrencyListViewState(
-                        isLoading = true,
-                        currencies = _viewState.value.currencies
-                    )
-                }
-            }
-        }.launchIn(viewModelScope)
+    fun refreshCurrencyList() {
+        _isRefresh.value = true
+        loadNextCurrencies(true)
     }
 
     fun searchCurrencies(text: String) {
-        repository.searchCurrencies(text).onEach { result ->
-            when (result) {
-                is Resource.Success -> {
-                    _viewState.value =
-                        CurrencyListViewState(
-                            currencies = result.data ?: emptyList(),
-                            isFromCache = result.isFromCache,
-                            error = result.message ?: ""
-                        )
-                    _isRefresh.value = false
-                }
+        viewModelScope.launch {
+            val result = repository.searchCurrencies(text)
 
-                is Resource.Error -> {
-                    _viewState.value = CurrencyListViewState(
-                        error = result.message ?: "An unexpected error occurred"
-                    )
-                    _isRefresh.value = false
-                }
-
-                is Resource.Loading -> {
-                    _viewState.value = CurrencyListViewState(
-                        isLoading = true,
-                    )
-                }
-            }
-        }.launchIn(viewModelScope)
+            viewState = CurrencyListViewState(
+                currencies = result.items ?: emptyList(),
+                isFromCache = result.isFromCache,
+                error = getErrorMessage(result.error)
+            )
+        }
     }
 }

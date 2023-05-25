@@ -7,11 +7,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -69,7 +69,7 @@ fun CurrencyListScreen(
     navigator: DestinationsNavigator,
     currencyListViewModel: CurrencyListViewModel = hiltViewModel(),
 ) {
-    val viewState by currencyListViewModel.viewState
+    val viewState = currencyListViewModel.viewState
     val isRefresh by currencyListViewModel.isRefresh.collectAsState()
 
     val swipeRefreshState =
@@ -147,7 +147,7 @@ fun CurrencyListScreen(
                         currencyListViewModel.apply {
                             updateSearchTextState("")
                             updateSearchWidgetState(SearchWidgetState.CLOSED)
-                            getCurrencyList()
+                            loadNextCurrencies(true)
                         }
                     },
                     onSearchClicked = {
@@ -165,7 +165,7 @@ fun CurrencyListScreen(
             },
 
             ) { padding ->
-            if (viewState.isLoading && !swipeRefreshState.isRefreshing) {
+            if (viewState.currencies.isEmpty() && viewState.isLoading && !swipeRefreshState.isRefreshing) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
@@ -195,16 +195,31 @@ fun CurrencyListScreen(
                                 )
                             }
                         } else {
-                            if (viewState.isFromCache && viewState.error.isNotEmpty() && isRefresh) {
+                            if (viewState.isFromCache && viewState.error.isNotEmpty()) {
                                 Toast.makeText(context, viewState.error, Toast.LENGTH_SHORT).show()
                             }
-                            items(viewState.currencies) { currency ->
+                            items(viewState.currencies.size) { i ->
+                                if (i >= viewState.currencies.size - 1 && !viewState.endReached && !viewState.isLoading && searchWidgetState == SearchWidgetState.CLOSED) {
+                                    currencyListViewModel.loadNextCurrencies()
+                                }
                                 CurrencyItem(
-                                    currency = currency,
+                                    currency = viewState.currencies[i],
                                     itemClick = { id ->
                                         navigator.navigate(CurrencyScreenDestination(id))
                                     }
                                 )
+                            }
+                            item {
+                                if (viewState.isLoading && !isRefresh) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(8.dp),
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        CircularProgressIndicator()
+                                    }
+                                }
                             }
                         }
                     }
