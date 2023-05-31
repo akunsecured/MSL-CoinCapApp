@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "103298172697",
+    "project_id": "msl-coincapapp",
+    "storage_bucket": "msl-coincapapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:103298172697:android:cbaf91ce472d4b3ea06788",
+        "android_client_info": {
+          "package_name": "hu.bme.aut.msl_coincapapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDH4aj7zWovJmx1IF54XzK1MgmQ3sGI0rw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

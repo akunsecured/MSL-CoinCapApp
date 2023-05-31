@@ -7,8 +7,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.ramcosta.composedestinations.DestinationsNavHost
 import dagger.hilt.android.AndroidEntryPoint
-import hu.bme.aut.msl_coincapapp.ui.navigation.CoinCapAppNavHost
+import hu.bme.aut.msl_coincapapp.ui.screen.NavGraphs
 import hu.bme.aut.msl_coincapapp.ui.theme.MSLCoinCapAppTheme
 
 @AndroidEntryPoint
@@ -22,7 +23,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    CoinCapAppNavHost()
+                    // CoinCapAppNavHost()
+                    DestinationsNavHost(navGraph = NavGraphs.root)
                 }
             }
         }
